@@ -11564,6 +11564,20 @@ boot();
     var _sh = window.show; show = function (x) { var r = _sh.apply(this, arguments); if (x !== 'hub') { var v2 = document.getElementById('v-hub'); if (v2) v2.hidden = true; } return r; };
     document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('#secs button'); if (b && b.dataset.s === 'hub') { e.stopPropagation(); e.preventDefault(); setSec('hub'); } }, true);
     var ob = document.getElementById('obv');
+    /* onboarding: ask only for the user's language, then go straight to the Home hub */
+    try {
+      var st = document.createElement('style'); st.textContent = '#obv .ob-dots{visibility:hidden}'; document.head.appendChild(st);
+      var _of = obFinish; obFinish = function () { var r = _of.apply(this, arguments); try { setSec('hub'); } catch (_) { } return r; };
+      ob.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-ob="src"]'); if (!b || typeof OS === 'undefined' || !OS) return;
+        e.stopImmediatePropagation(); e.preventDefault();
+        var src = b.dataset.l; S.cfg.src = src;
+        var cand = ['en', 'fa', 'de', 'tr'].filter(function (k) { return k !== src && PACKS[k]; })[0] || Object.keys(PACKS).filter(function (k) { return k !== src; })[0];
+        S.cfg.lang = (S.cfg.lang && S.cfg.lang !== src && PACKS[S.cfg.lang]) ? S.cfg.lang : cand;
+        S.cfg.uiAuto = true; applyUI();
+        OS.goal = 'gen'; OS.track = ''; OS.lvl = 'A1'; obFinish(false);
+      }, true);
+    } catch (_) { }
     if (!ob || ob.hidden) setSec('hub');
     document.addEventListener('rm-auth', function () { if (typeof sec !== 'undefined' && sec === 'hub') render(); });
     window.rmHub = { render: render, open: function () { setSec('hub'); } };
